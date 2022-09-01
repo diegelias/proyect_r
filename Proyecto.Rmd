@@ -1,0 +1,93 @@
+Diego Pablo Elias Cifuentes
+
+```{r}
+library(tidyverse)
+library(dplyr)
+
+yearly <- read.csv("deaths_handwashing.csv")
+yearly
+```
+
+```{r}
+yearly <- yearly %>%
+  mutate(proportion_deaths=deaths/births)
+
+yearly
+```
+
+```{r}
+proportion_deaths_per_year <- yearly %>%
+  group_by(year, clinic)
+
+ggplot(proportion_deaths_per_year, aes(x = year, y = proportion_deaths, colour = clinic))+
+  geom_line() +
+  geom_point( size=2, shape=21, fill="white")+
+  ggtitle("Proportion deaths per year")+
+  labs(x="Year", y= "Proportion of deaths")
+```
+
+```{r}
+monthly <- read.csv("deaths_clinic_1.csv")
+monthly
+
+
+monthly <- monthly %>%
+  mutate(proportion_deaths = deaths/births)
+
+head(monthly)
+```
+
+```{r}
+proportion_deaths_per_day <- monthly %>%
+  select(date, proportion_deaths)
+
+ggplot(proportion_deaths_per_day, aes(x= date, y=proportion_deaths))+
+  #geom_line() +
+  geom_point( size=1.5, shape=21, fill="blue")+
+  ggtitle("Proportion deaths per dayin clinic 1")+
+  labs(x="Date", y= "Proportion of deaths")
+ 
+```
+```{r}
+death_by_year <- monthly %>%
+  mutate(date = as.Date(date), year = as.numeric(format(date,'%Y')), 
+         month = as.numeric(format(date,'%m')))%>%
+  group_by(year)%>%
+  summarize(deaths_per_month = mean(deaths))
+
+ggplot(death_by_year, aes(x=year, y = deaths_per_month, fill = deaths_per_month)) +
+  geom_col()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+yearly_clinic1 <- yearly %>%
+  filter(clinic=="clinic 1") %>%
+  select(year, proportion_deaths)
+
+yearly_clinic2 <- yearly %>%
+  filter(clinic=="clinic 2") %>%
+  select(year, proportion_deaths)
+
+proportion_deaths_per_year <- yearly_clinic1 %>%
+  inner_join(yearly_clinic2, by="year", suffix=c("_clinic1", "_clinic2"))
+
