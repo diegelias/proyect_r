@@ -4,7 +4,7 @@ Diego Pablo Elias Cifuentes
 library(tidyverse)
 library(dplyr)
 
-yearly <- read.csv("deaths_handwashing.csv")
+yearly <- read_csv('deaths_handwashing.csv')
 yearly
 ```
 
@@ -16,18 +16,15 @@ yearly
 ```
 
 ```{r}
-proportion_deaths_per_year <- yearly %>%
-  group_by(year, clinic)
-
-ggplot(proportion_deaths_per_year, aes(x = year, y = proportion_deaths, colour = clinic))+
+ggplot(yearly, aes(x = year, y = proportion_deaths, colour = clinic))+
   geom_line() +
-  geom_point( size=2, shape=21, fill="white")+
+  geom_point(size=2, shape=21, fill="white")+
   ggtitle("Proportion deaths per year")+
   labs(x="Year", y= "Proportion of deaths")
 ```
 
 ```{r}
-monthly <- read.csv("deaths_clinic_1.csv")
+monthly <- read_csv('deaths_clinic_1.csv')
 monthly
 
 
@@ -42,10 +39,10 @@ proportion_deaths_per_day <- monthly %>%
   select(date, proportion_deaths)
 
 ggplot(proportion_deaths_per_day, aes(x= date, y=proportion_deaths))+
-  #geom_line() +
-  geom_point( size=1.5, shape=21, fill="blue")+
+  geom_line() +
+  #geom_point( size=1, shape=21, fill="blue")+
   ggtitle("Proportion deaths per dayin clinic 1")+
-  labs(x="Date", y= "Proportion of deaths")
+  labs(x="Year", y= "Proportion of deaths")
  
 ```
 ```{r}
@@ -53,10 +50,41 @@ death_by_year <- monthly %>%
   mutate(date = as.Date(date), year = as.numeric(format(date,'%Y')), 
          month = as.numeric(format(date,'%m')))%>%
   group_by(year)%>%
-  summarize(deaths_per_month = mean(deaths))
+  summarize(deaths_per_month = mean(deaths))%>%
+  print(death_by_year)
 
-ggplot(death_by_year, aes(x=year, y = deaths_per_month, fill = deaths_per_month)) +
+ggplot(death_by_year, aes(x=year, y = deaths_per_month, fill = -deaths_per_month)) +
   geom_col()
+```
+6.
+
+```{r}
+monthly <- monthly %>%
+  mutate(handwashing_started = monthly$date>="1847-01-01")%>%
+  print(monthly)
+
+
+ggplot(monthly, aes(x= date, y=proportion_deaths, color=handwashing_started))+
+  geom_line() +
+  #geom_point( size=1, shape=21, fill="blue")+
+  ggtitle("Proportion deaths per dayin clinic 1")+
+  labs(x="Year", y= "Proportion of deaths")
+
+
+```
+7.
+```{r}
+month_summary <- monthly %>%
+  group_by(handwashing_started)%>%
+  summarise(mean_proportion_deaths = mean(proportion_deaths))%>%
+  print(month_summary)
+
+```
+
+8. 
+
+```{r}
+
 ```
 
 
@@ -80,14 +108,4 @@ ggplot(death_by_year, aes(x=year, y = deaths_per_month, fill = deaths_per_month)
 
 
 
-yearly_clinic1 <- yearly %>%
-  filter(clinic=="clinic 1") %>%
-  select(year, proportion_deaths)
-
-yearly_clinic2 <- yearly %>%
-  filter(clinic=="clinic 2") %>%
-  select(year, proportion_deaths)
-
-proportion_deaths_per_year <- yearly_clinic1 %>%
-  inner_join(yearly_clinic2, by="year", suffix=c("_clinic1", "_clinic2"))
 
